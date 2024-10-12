@@ -45,6 +45,11 @@ func TestScraper_Start(t *testing.T) {
 			Times(1)
 
 		// when
+		go func() {
+			for range scraper.Events() {
+			}
+		}()
+
 		t1 := time.Now()
 		err := scraper.Start(ctx)
 
@@ -81,6 +86,11 @@ func TestScraper_Start(t *testing.T) {
 			Times(1)
 
 		// when
+		go func() {
+			for range scraper.Events() {
+			}
+		}()
+
 		t1 := time.Now()
 		err := scraper.Start(ctx)
 
