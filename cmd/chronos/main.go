@@ -1,19 +1,27 @@
 package main
 
 import (
-	"context"
 	"log"
-	"net/http"
 	"os"
-	"os/signal"
 
-	httpv1 "github.com/flohansen/chronos/internal/http"
+	"github.com/flohansen/chronos/internal/cli"
 )
 
-func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Kill, os.Interrupt)
-	defer stop()
+func run() error {
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "init":
+			return cli.Init()
+		}
+	} else {
+		return cli.Run()
+	}
 
-	scraper := httpv1.NewScraper(&http.Client{})
-	log.Fatalf("scraper error: %s", scraper.Start(ctx))
+	return nil
+}
+
+func main() {
+	if err := run(); err != nil {
+		log.Fatalf("error: %s", err)
+	}
 }

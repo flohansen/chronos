@@ -1,4 +1,4 @@
-package http
+package scrape_test
 
 import (
 	"context"
@@ -9,7 +9,8 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/flohansen/chronos/internal/http/mocks"
+	"github.com/flohansen/chronos/internal/scrape"
+	"github.com/flohansen/chronos/internal/scrape/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,15 +21,15 @@ func TestScraper_Start(t *testing.T) {
 	t.Run("should scrape target two times using interval", func(t *testing.T) {
 		// given
 		ctx, cancel := context.WithCancel(context.Background())
-		scraper := NewScraper(client)
-		scraper.targets = []HttpTarget{
-			{
+		scraper := scrape.NewScraper(
+			client,
+			scrape.WithTarget(scrape.HttpTarget{
 				Scheme:  "http",
 				Host:    "example.com",
 				Path:    "/metrics",
 				Timeout: 10 * time.Millisecond,
-			},
-		}
+			}),
+		)
 
 		client.EXPECT().
 			Do(gomock.Any()).
@@ -56,15 +57,15 @@ func TestScraper_Start(t *testing.T) {
 	t.Run("should not stop when http errors occur", func(t *testing.T) {
 		// given
 		ctx, cancel := context.WithCancel(context.Background())
-		scraper := NewScraper(client)
-		scraper.targets = []HttpTarget{
-			{
+		scraper := scrape.NewScraper(
+			client,
+			scrape.WithTarget(scrape.HttpTarget{
 				Scheme:  "http",
 				Host:    "example.com",
 				Path:    "/metrics",
 				Timeout: 10 * time.Millisecond,
-			},
-		}
+			}),
+		)
 
 		client.EXPECT().
 			Do(gomock.Any()).
