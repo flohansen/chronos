@@ -2,51 +2,71 @@ package cli
 
 import (
 	"context"
-	"fmt"
-	"log"
-	"math/rand/v2"
-	"net/http"
-	"os"
-	"os/signal"
+	"sync"
+	"time"
 
-	"github.com/flohansen/chronos/internal/scrape"
-	"github.com/flohansen/chronos/internal/storage"
-	"gopkg.in/yaml.v3"
+	"github.com/flohansen/chronos/internal/metric"
 )
 
-func Init() error {
-	f, err := os.Create("chronos.yml")
-	if err != nil {
-		return fmt.Errorf("could not open file: %s", err)
-	}
-	defer f.Close()
-
-	if err := yaml.NewEncoder(f).Encode(scrape.DefaultConfig); err != nil {
-		return fmt.Errorf("could not encode default config: %s", err)
-	}
-
-	return nil
+type Scraper interface {
+	Scrape(ctx context.Context, url string) ([]metric.Metric, error)
 }
 
-func Run() error {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Kill, os.Interrupt)
-	defer stop()
+type Storage interface {
+	Write(m metric.Metric) error
+}
 
-	scraper := scrape.NewScraper(&http.Client{}, scrape.WithConfig("chronos.yml"))
-	storage := storage.NewFileWriter()
+type App struct {
+	config  *Config
+	scraper Scraper
+	storage Storage
+}
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-scraper.Events():
-				if err := storage.Write("metric_name", rand.Float32()); err != nil {
-					log.Println(err)
+func NewApp(scraper Scraper, storage Storage, config *Config) *App {
+	return &App{
+		config:  config,
+		scraper: scraper,
+		storage: storage,
+	}
+}
+
+func (a *App) Run(ctx context.Context) <-chan error {
+	var wg sync.WaitGroup
+	errs := make(chan error)
+
+	for _, target := range a.config.Targets {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			for {
+				select {
+				case <-ctx.Done():
+					errs <- ctx.Err()
+					return
+				case <-time.After(target.Timeout):
+					metrics, err := a.scraper.Scrape(ctx, target.URL)
+					if err != nil {
+						errs <- err
+						continue
+					}
+
+					for _, m := range metrics {
+						if err := a.storage.Write(m); err != nil {
+							errs <- err
+							continue
+						}
+					}
 				}
 			}
-		}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(errs)
 	}()
 
-	return fmt.Errorf("scraper error: %s", scraper.Start(ctx))
+	return errs
 }
