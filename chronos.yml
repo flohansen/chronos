@@ -1,0 +1,5 @@
+targets:
+    - url: http://127.0.0.1:3000/metrics
+      timeout: 1s
+    - url: http://127.0.0.1:3001/metrics
+      timeout: 3s
