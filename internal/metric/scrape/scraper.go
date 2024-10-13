@@ -3,12 +3,8 @@ package scrape
 //go:generate mockgen -destination mocks/scraper.go -package mocks -source scraper.go
 
 import (
-	"bufio"
 	"context"
-	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/flohansen/chronos/internal/metric"
 )
@@ -42,28 +38,9 @@ func (s *Scraper) Scrape(ctx context.Context, url string) ([]metric.Metric, erro
 	}
 	defer res.Body.Close()
 
-	var metrics []metric.Metric
-	scanner := bufio.NewScanner(res.Body)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.TrimSpace(line) == "" {
-			continue
-		}
-
-		tokens := strings.Split(line, " ")
-		if len(tokens) != 2 {
-			return nil, fmt.Errorf("invalid metric syntax: '%s'", line)
-		}
-
-		value, err := strconv.ParseFloat(tokens[1], 32)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse value: %s", err)
-		}
-
-		metrics = append(metrics, metric.Metric{
-			Name:  strings.TrimSpace(tokens[0]),
-			Value: float32(value),
-		})
+	metrics, err := metric.NewDecoder(res.Body).Decode()
+	if err != nil {
+		return nil, err
 	}
 
 	return metrics, nil

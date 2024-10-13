@@ -17,7 +17,7 @@ type HttpTarget struct {
 	Timeout time.Duration `yaml:"timeout"`
 }
 
-func LoadConfig(opts ...ConfigOpt) *Config {
+func NewConfig(opts ...ConfigOpt) *Config {
 	cfg := &Config{}
 	for _, opt := range opts {
 		opt(cfg)
