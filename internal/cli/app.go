@@ -45,7 +45,7 @@ func (a *App) Run(ctx context.Context) <-chan error {
 				case <-ctx.Done():
 					errs <- ctx.Err()
 					return
-				case <-time.After(target.Timeout):
+				case <-time.After(target.Interval):
 					metrics, err := a.scraper.Scrape(ctx, target.URL)
 					if err != nil {
 						errs <- err
