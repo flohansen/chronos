@@ -25,7 +25,7 @@ func NewScraper(client HttpClient) *Scraper {
 	return s
 }
 
-// Scrapes a HTTP target.
+// Scrapes a HTTP target and returns the exposed metrics.
 func (s *Scraper) Scrape(ctx context.Context, url string) ([]metric.Metric, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {

@@ -13,8 +13,8 @@ type Config struct {
 }
 
 type HttpTarget struct {
-	URL     string        `yaml:"url"`
-	Timeout time.Duration `yaml:"timeout"`
+	URL      string        `yaml:"url"`
+	Interval time.Duration `yaml:"interval"`
 }
 
 func NewConfig(opts ...ConfigOpt) *Config {
