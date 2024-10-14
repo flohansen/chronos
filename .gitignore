@@ -1,1 +1,6 @@
+# auto generated mock files
 mocks/
+
+# chronos specific files
+/data/
+/chronos.yml

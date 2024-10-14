@@ -9,7 +9,12 @@ import (
 )
 
 type Config struct {
-	Targets []HttpTarget `yaml:"targets"`
+	Storage StorageConfig `yaml:"storage"`
+	Targets []HttpTarget  `yaml:"targets"`
+}
+
+type StorageConfig struct {
+	Directory string `yaml:"directory"`
 }
 
 type HttpTarget struct {

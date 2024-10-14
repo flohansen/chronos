@@ -12,6 +12,8 @@ Chronos uses a YAML configuration to setup storage parameters and scrape
 targets. Here is an example config containing all values.
 
 ```yaml
+storage:
+  directory: data/
 targets:
 - url: http://localhost:3000/metrics
   interval: 1s
