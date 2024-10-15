@@ -9,7 +9,7 @@ import (
 
 func TestLexer(t *testing.T) {
 	// given
-	lexer := query.NewSimpleLexer(`metric_name`)
+	lexer := query.NewSimpleLexer(`metric_name_1`)
 
 	// when
 	var tokens []query.Token
@@ -19,6 +19,6 @@ func TestLexer(t *testing.T) {
 
 	// then
 	assert.Equal(t, []query.Token{
-		{Type: query.Literal, Value: "metric_name"},
+		{Type: query.Literal, Value: "metric_name_1"},
 	}, tokens)
 }

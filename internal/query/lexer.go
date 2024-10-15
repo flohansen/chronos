@@ -51,7 +51,7 @@ func (s *SimpleLexer) parseLiteral() Token {
 
 		c := rune(s.input[s.i])
 
-		if isLetter(c) || c == '_' {
+		if isLetter(c) || isNumeric(c) || c == '_' {
 			value += string(c)
 			s.i++
 		} else {
@@ -68,4 +68,8 @@ func (s *SimpleLexer) Token() Token {
 
 func isLetter(c rune) bool {
 	return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
+}
+
+func isNumeric(c rune) bool {
+	return c >= '0' && c <= '9'
 }
