@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestScraper_Start(t *testing.T) {
+func TestScraper_Scrape(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := mocks.NewMockHttpClient(ctrl)
 
