@@ -1,6 +1,15 @@
 package query
 
-type AST struct {
+type Node interface {
+	Eval(metric MetricRow) bool
+}
+
+type MetricSelector struct {
+	Name string
+}
+
+func (n *MetricSelector) Eval(data MetricRow) bool {
+	return data.Name == n.Name
 }
 
 type Lexer interface {
@@ -18,10 +27,16 @@ func NewSimpleParser(lexer Lexer) *SimpleParser {
 	}
 }
 
-func (p *SimpleParser) Parse() (AST, error) {
+func (p *SimpleParser) Parse() (Node, error) {
 	for p.lexer.Next() {
-		_ = p.lexer.Token()
+		token := p.lexer.Token()
+		switch token.Type {
+		case Literal:
+			return &MetricSelector{
+				Name: token.Value,
+			}, nil
+		}
 	}
 
-	return AST{}, nil
+	return nil, nil
 }

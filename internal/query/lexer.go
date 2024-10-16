@@ -3,7 +3,9 @@ package query
 type TokenType int
 
 const (
-	Literal TokenType = iota
+	Unknown TokenType = iota
+	Literal
+	NumberLiteral
 )
 
 type Token struct {
@@ -35,9 +37,14 @@ func (s *SimpleLexer) Next() bool {
 	case isLetter(c):
 		s.token = s.parseLiteral()
 		return true
+	case isNumeric(c):
+		s.token = s.parseNumberLiteral()
+		return true
+	default:
+		s.token = Token{Type: Unknown, Value: string(c)}
+		s.i++
+		return true
 	}
-
-	return false
 }
 
 func (s *SimpleLexer) parseLiteral() Token {
@@ -60,6 +67,28 @@ func (s *SimpleLexer) parseLiteral() Token {
 	}
 
 	return Token{Type: Literal, Value: value}
+}
+
+func (s *SimpleLexer) parseNumberLiteral() Token {
+	value := string(s.input[s.i])
+	s.i++
+
+	for {
+		if s.i >= len(s.input) {
+			break
+		}
+
+		c := rune(s.input[s.i])
+
+		if isNumeric(c) {
+			value += string(c)
+			s.i++
+		} else {
+			break
+		}
+	}
+
+	return Token{Type: NumberLiteral, Value: value}
 }
 
 func (s *SimpleLexer) Token() Token {
